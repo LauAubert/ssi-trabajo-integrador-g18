@@ -1,0 +1,29 @@
+# SSI - TP IoT/IIoT - Grupo 18
+# Broker MQTT para el laboratorio de la demo.
+#
+# Levanta Mosquitto en la PC "victima/servidor".
+# Por defecto usa la config INSEGURA (sin auth, sin TLS) para la
+# primera parte de la demo. Para la parte de mitigacion, cambiar
+# el archivo de config montado por mosquitto-secure.conf.
+#
+#   docker compose up -d
+#   docker compose logs -f
+#
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: ssi-broker
+    restart: unless-stopped
+    ports:
+      - "1883:1883"   # MQTT plano (inseguro)
+      - "8883:8883"   # MQTT sobre TLS (solo usado por la version endurecida)
+    volumes:
+      # --- Parte 1: broker INSEGURO (demo del ataque) ---
+      - ./mosquitto-insecure.conf:/mosquitto/config/mosquitto.conf:ro
+      # --- Parte 2: broker ENDURECIDO (demo de la mitigacion) ---
+      # - ./mosquitto-secure.conf:/mosquitto/config/mosquitto.conf:ro
+      # - ./passwd:/mosquitto/config/passwd:ro
+      # - ./acl:/mosquitto/config/acl:ro
+      # - ./certs:/mosquitto/config/certs:ro
+      - ./data:/mosquitto/data
+      - ./log:/mosquitto/log

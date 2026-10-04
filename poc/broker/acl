@@ -1,0 +1,14 @@
+# ACL de ejemplo para la version endurecida.
+# Minimo privilegio: cada identidad solo toca lo suyo.
+
+# El ESP32 solo publica su nivel y su estado, y recibe comandos.
+user esp32
+topic write planta/lineaA/tanque1/nivel
+topic write planta/lineaA/valvula1/estado
+topic read  planta/lineaA/valvula1/cmd
+
+# El SCADA/dashboard lee el nivel y manda comandos a la valvula.
+user scada
+topic read  planta/lineaA/tanque1/nivel
+topic read  planta/lineaA/valvula1/estado
+topic write planta/lineaA/valvula1/cmd

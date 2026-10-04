@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Datos y secretos generados por el broker / mitigaciones (no versionar)
+poc/broker/data/
+poc/broker/log/
+poc/broker/certs/
+poc/broker/passwd
+
+# OS
+.DS_Store
