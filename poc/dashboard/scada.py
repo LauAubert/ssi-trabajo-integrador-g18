@@ -38,7 +38,8 @@ TOPIC_ESTADO = "planta/lineaA/valvula1/estado"
 
 LOW, HIGH = 30, 90
 HIST_MAX = 60               # muestras guardadas (~2 min a 2s c/u)
-BLOCKS = "▁▂▃▄▅▆▇█"         # 8 niveles para el sparkline
+CHART_H = 8                 # alto del grafico, en filas de texto
+PARTS = " ▁▂▃▄▅▆▇█"         # 0..8 octavos de bloque (relleno desde abajo)
 
 console = Console()
 state = {"nivel": None, "cm": None, "estado": "?", "ultimo_cmd": "-",
@@ -47,26 +48,31 @@ history = deque(maxlen=HIST_MAX)
 lock = threading.Lock()
 
 
-def sparkline(vals):
-    """Convierte una lista de niveles (0-100) en una linea de bloques."""
-    if not vals:
-        return "(sin datos aun...)"
-    return "".join(
-        BLOCKS[min(len(BLOCKS) - 1, int(v / 100 * len(BLOCKS)))] for v in vals
-    )
-
-
 def chart():
+    """Grafico de columnas (alto CHART_H filas) del nivel historico."""
     with lock:
         vals = list(history)
-    linea = sparkline(vals)
-    if vals:
-        actual, mn, mx = vals[-1], min(vals), max(vals)
-        pie = (f"actual: [bold]{actual}%[/bold]   min: {mn}%   max: {mx}%"
-               f"   ({len(vals)} muestras · ~2s c/u)")
-    else:
-        pie = "esperando datos del sensor..."
-    cuerpo = f"100% ┤\n[green]{linea}[/green]\n  0% ┤   {pie}"
+    if not vals:
+        return Panel("esperando datos del sensor...",
+                     title="Nivel del tanque — histórico", border_style="cyan")
+
+    # nivel de cada muestra expresado en octavos de celda (resolucion CHART_H*8)
+    levels = [min(CHART_H * 8, max(0, round(v / 100 * CHART_H * 8))) for v in vals]
+    filas = []
+    for r in range(CHART_H - 1, -1, -1):        # de arriba (100%) hacia abajo (0%)
+        base = r * 8
+        linea = ""
+        for lv in levels:
+            f = lv - base
+            linea += "█" if f >= 8 else (" " if f <= 0 else PARTS[f])
+        lbl = "100" if r == CHART_H - 1 else ("  0" if r == 0 else "   ")
+        filas.append(f"{lbl} ┤[green]{linea}[/green]")
+
+    eje = "    └" + "─" * len(vals)
+    actual, mn, mx = vals[-1], min(vals), max(vals)
+    pie = (f"       actual: [bold]{actual}%[/bold]   min: {mn}%   max: {mx}%"
+           f"   ({len(vals)} muestras · ~2s c/u)")
+    cuerpo = "\n".join(filas) + "\n" + eje + "\n" + pie
     return Panel(cuerpo, title="Nivel del tanque — histórico",
                  border_style="cyan")
 
