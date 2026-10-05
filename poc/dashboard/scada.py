@@ -5,15 +5,16 @@ Mini-SCADA / operador legitimo.
 
 Representa el sistema de control normal de la planta. Suscribe al
 nivel del tanque y al estado de la valvula, muestra un panel en vivo
-y ejecuta un lazo de control simple:
+(con un grafico temporal del nivel) y ejecuta un lazo de control
+simple:
 
   - nivel < LOW   -> ABRIR valvula (reponer)
   - nivel > HIGH  -> CERRAR valvula
 
 En la demo, este panel es el "cliente de buena fe": primero se lo ve
 operar normal; despues se lanza el atacante (spoof_sensor / inject_
-command) y se observa como el panel reacciona a datos falsos o como el
-actuador cambia de estado sin que el SCADA lo haya ordenado.
+command) y se observa como el grafico reacciona a datos falsos o como
+el actuador cambia de estado sin que el SCADA lo haya ordenado.
 
 Ejecutar:
   python scada.py --host 192.168.1.100
@@ -23,10 +24,12 @@ import argparse
 import json
 import threading
 import time
+from collections import deque
 
 import paho.mqtt.client as mqtt
-from rich.console import Console
+from rich.console import Console, Group
 from rich.live import Live
+from rich.panel import Panel
 from rich.table import Table
 
 TOPIC_NIVEL  = "planta/lineaA/tanque1/nivel"
@@ -34,14 +37,41 @@ TOPIC_CMD    = "planta/lineaA/valvula1/cmd"
 TOPIC_ESTADO = "planta/lineaA/valvula1/estado"
 
 LOW, HIGH = 30, 90
+HIST_MAX = 60               # muestras guardadas (~2 min a 2s c/u)
+BLOCKS = "▁▂▃▄▅▆▇█"         # 8 niveles para el sparkline
 
 console = Console()
 state = {"nivel": None, "cm": None, "estado": "?", "ultimo_cmd": "-",
          "ultimo_msg": "-"}
+history = deque(maxlen=HIST_MAX)
 lock = threading.Lock()
 
 
-def render():
+def sparkline(vals):
+    """Convierte una lista de niveles (0-100) en una linea de bloques."""
+    if not vals:
+        return "(sin datos aun...)"
+    return "".join(
+        BLOCKS[min(len(BLOCKS) - 1, int(v / 100 * len(BLOCKS)))] for v in vals
+    )
+
+
+def chart():
+    with lock:
+        vals = list(history)
+    linea = sparkline(vals)
+    if vals:
+        actual, mn, mx = vals[-1], min(vals), max(vals)
+        pie = (f"actual: [bold]{actual}%[/bold]   min: {mn}%   max: {mx}%"
+               f"   ({len(vals)} muestras · ~2s c/u)")
+    else:
+        pie = "esperando datos del sensor..."
+    cuerpo = f"100% ┤\n[green]{linea}[/green]\n  0% ┤   {pie}"
+    return Panel(cuerpo, title="Nivel del tanque — histórico",
+                 border_style="cyan")
+
+
+def tabla():
     t = Table(title="SCADA - Linea A / Tanque 1", expand=True)
     t.add_column("Variable"); t.add_column("Valor", justify="right")
     with lock:
@@ -58,6 +88,10 @@ def render():
     return t
 
 
+def render():
+    return Group(tabla(), chart())
+
+
 def on_message(client, userdata, msg):
     control = userdata["control"]
     with lock:
@@ -67,7 +101,9 @@ def on_message(client, userdata, msg):
                 state["nivel"] = data.get("nivel")
                 state["cm"] = data.get("cm")
                 state["ultimo_msg"] = time.strftime("%H:%M:%S")
-            except json.JSONDecodeError:
+                if state["nivel"] is not None:
+                    history.append(int(state["nivel"]))
+            except (json.JSONDecodeError, ValueError, TypeError):
                 pass
         elif msg.topic == TOPIC_ESTADO:
             state["estado"] = msg.payload.decode()
