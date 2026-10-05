@@ -19,19 +19,19 @@
   <text x="268" y="271" text-anchor="end" font-size="13" font-weight="700" fill="#cfd8dc">GND</text>
   <!-- D5 TRIG -->
   <circle cx="280" cy="330" r="6" fill="#fbc02d"/>
-  <text x="268" y="326" text-anchor="end" font-size="13" font-weight="700" fill="#ffe9a6">GPIO5</text>
+  <text x="268" y="326" text-anchor="end" font-size="13" font-weight="700" fill="#ffe9a6">GPIO13</text>
   <!-- D18 ECHO -->
   <circle cx="280" cy="380" r="6" fill="#fb8c00"/>
-  <text x="268" y="376" text-anchor="end" font-size="13" font-weight="700" fill="#ffd9ab">GPIO18</text>
+  <text x="268" y="376" text-anchor="end" font-size="13" font-weight="700" fill="#ffd9ab">GPIO34</text>
   <!-- D13 SERVO -->
   <circle cx="280" cy="435" r="6" fill="#1e88e5"/>
-  <text x="268" y="431" text-anchor="end" font-size="13" font-weight="700" fill="#bbdcfb">GPIO13</text>
+  <text x="268" y="431" text-anchor="end" font-size="13" font-weight="700" fill="#bbdcfb">GPIO14</text>
   <!-- D2 LED -->
   <circle cx="280" cy="480" r="6" fill="#43a047"/>
-  <text x="268" y="476" text-anchor="end" font-size="13" font-weight="700" fill="#bfe6c2">GPIO2</text>
+  <text x="268" y="476" text-anchor="end" font-size="13" font-weight="700" fill="#bfe6c2">GPIO27</text>
   <!-- D14 BUZZER -->
   <circle cx="280" cy="525" r="6" fill="#8e24aa"/>
-  <text x="268" y="521" text-anchor="end" font-size="13" font-weight="700" fill="#e3bdee">GPIO14</text>
+  <text x="268" y="521" text-anchor="end" font-size="13" font-weight="700" fill="#e3bdee">GPIO26</text>
 
   <!-- ================= Wires (señales) ================= -->
   <!-- TRIG D5 -> HC-SR04 -->
@@ -55,26 +55,26 @@
   <!-- HC-SR04 -->
   <rect x="600" y="175" width="320" height="110" rx="10" fill="#eef3f6" stroke="#b0bec5"/>
   <text x="616" y="200" font-size="15" font-weight="700" fill="#1f2933">HC-SR04 · Ultrasonido (sensor de "nivel")</text>
-  <circle cx="600" cy="215" r="5" fill="#fbc02d"/><text x="616" y="222" font-size="12.5" fill="#37474f">Trig → GPIO5</text>
-  <circle cx="600" cy="245" r="5" fill="#fb8c00"/><text x="616" y="252" font-size="12.5" fill="#37474f">Echo → divisor → GPIO18</text>
-  <text x="616" y="275" font-size="12.5" fill="#37474f"><tspan fill="#c62828" font-weight="700">Vcc → 5V</tspan>   ·   <tspan font-weight="700">Gnd → GND</tspan></text>
+  <circle cx="600" cy="215" r="5" fill="#fbc02d"/><text x="616" y="222" font-size="12.5" fill="#37474f">Trig → GPIO13</text>
+  <circle cx="600" cy="245" r="5" fill="#fb8c00"/><text x="616" y="252" font-size="12.5" fill="#37474f">Echo → divisor → GPIO34 (solo-entrada)</text>
+  <text x="616" y="275" font-size="12.5" fill="#37474f"><tspan fill="#c62828" font-weight="700">Vcc → 5V (VIN)</tspan>   ·   <tspan font-weight="700">Gnd → GND</tspan></text>
 
   <!-- Servo -->
   <rect x="600" y="400" width="320" height="75" rx="10" fill="#eef3f6" stroke="#b0bec5"/>
   <text x="616" y="423" font-size="15" font-weight="700" fill="#1f2933">Servo SG90 · "Válvula"</text>
-  <circle cx="600" cy="438" r="5" fill="#1e88e5"/><text x="616" y="445" font-size="12.5" fill="#37474f">Naranja (señal) → GPIO13</text>
-  <text x="616" y="466" font-size="12.5" fill="#37474f"><tspan fill="#c62828" font-weight="700">Rojo → 5V</tspan>   ·   <tspan font-weight="700">Marrón → GND</tspan></text>
+  <circle cx="600" cy="438" r="5" fill="#1e88e5"/><text x="616" y="445" font-size="12.5" fill="#37474f">Naranja (señal) → GPIO14</text>
+  <text x="616" y="466" font-size="12.5" fill="#37474f"><tspan fill="#c62828" font-weight="700">Rojo → 5V (VIN)</tspan>   ·   <tspan font-weight="700">Marrón → GND</tspan></text>
 
   <!-- LED + Buzzer -->
   <rect x="600" y="490" width="320" height="95" rx="10" fill="#eef3f6" stroke="#b0bec5"/>
   <text x="616" y="513" font-size="15" font-weight="700" fill="#1f2933">Actuadores de aviso</text>
-  <circle cx="600" cy="528" r="5" fill="#43a047"/><text x="616" y="535" font-size="12.5" fill="#37474f">LED: GPIO2 → 220Ω → ánodo(+) ; cátodo(−) → GND</text>
-  <circle cx="600" cy="558" r="5" fill="#8e24aa"/><text x="616" y="565" font-size="12.5" fill="#37474f">Buzzer activo: GPIO14 → (+) ; (−) → GND</text>
+  <circle cx="600" cy="528" r="5" fill="#43a047"/><text x="616" y="535" font-size="12.5" fill="#37474f">LED: GPIO27 → 220Ω → ánodo(+) ; cátodo(−) → GND</text>
+  <circle cx="600" cy="558" r="5" fill="#8e24aa"/><text x="616" y="565" font-size="12.5" fill="#37474f">Buzzer activo: GPIO26 → (+) ; (−) → GND</text>
 
   <!-- ================= Notas ================= -->
   <rect x="90" y="600" width="830" height="100" rx="10" fill="#fffde7" stroke="#fbc02d"/>
   <text x="106" y="623" font-size="13.5" font-weight="700" fill="#5d4037">Notas de montaje</text>
-  <text x="106" y="645" font-size="12.5" fill="#5d4037">• <tspan font-weight="700">Divisor en ECHO:</tspan> el HC-SR04 saca 5V y el ESP32 es de 3.3V. Echo→R1(1kΩ)→GPIO18, y GPIO18→R2(2kΩ)→GND.</text>
+  <text x="106" y="645" font-size="12.5" fill="#5d4037">• <tspan font-weight="700">Divisor en ECHO:</tspan> el HC-SR04 saca 5V y el ESP32 es de 3.3V. Echo→R1(1kΩ)→GPIO34, y GPIO34→R2(2kΩ)→GND.</text>
   <text x="106" y="665" font-size="12.5" fill="#5d4037">• <tspan font-weight="700">Alimentación:</tspan> servo y sensor a 5V (VIN por USB). Si el servo tironea o resetea el ESP32, usar fuente 5V aparte y <tspan font-weight="700">unir los GND</tspan>.</text>
-  <text x="106" y="685" font-size="12.5" fill="#5d4037">• <tspan font-weight="700">LED:</tspan> GPIO2 ya tiene un LED onboard; el LED externo con su 220Ω es opcional, para que se vea mejor en la demo.</text>
+  <text x="106" y="685" font-size="12.5" fill="#5d4037">• <tspan font-weight="700">Pines:</tspan> todos sobre la hilera libre (lado VIN). Se evitan CMD/SD2/SD3 (flash) y EN. El LED externo necesita su 220Ω (GPIO2 onboard no queda accesible).</text>
 </svg>

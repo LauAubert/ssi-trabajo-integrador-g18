@@ -64,15 +64,21 @@ Diagrama completo: [`../docs/diagrama-conexion.svg`](../docs/diagrama-conexion.s
 
 | Componente | Conexión al ESP32 |
 |---|---|
-| **HC-SR04** (ultrasonido) | `Vcc→5V`, `Gnd→GND`, `Trig→GPIO5`, `Echo→`divisor`→GPIO18` |
-| **Servo SG90** (válvula) | `Rojo→5V`, `Marrón→GND`, `Naranja(señal)→GPIO13` |
-| **LED** de estado | `GPIO2 → 220Ω → ánodo(+)`; `cátodo(−) → GND` |
-| **Buzzer** activo | `GPIO14 → (+)`; `(−) → GND` |
+| **HC-SR04** (ultrasonido) | `Vcc→5V (VIN)`, `Gnd→GND`, `Trig→GPIO13`, `Echo→`divisor`→GPIO34` |
+| **Servo SG90** (válvula) | `Rojo→5V (VIN)`, `Marrón→GND`, `Naranja(señal)→GPIO14` |
+| **LED** de estado | `GPIO27 → 220Ω → ánodo(+)`; `cátodo(−) → GND` |
+| **Buzzer** activo | `GPIO26 → (+)`; `(−) → GND` |
+
+> Todos los pines están sobre la **misma hilera libre** de la protoboard
+> (el lado de `VIN`/`GND`), para poder usar el ESP32 con una sola
+> protoboard. Se evitan `CMD`/`SD2`/`SD3` (flash interna) y `EN` (reset).
+> `GPIO34` es solo-entrada: ideal para el Echo. Alimentación por **USB**:
+> el pin `VIN` entrega los 5V.
 
 **Dos cuidados clave:**
 
 - **Divisor de tensión en ECHO** (el HC-SR04 saca 5V y el ESP32 tolera
-  3.3V): `Echo → R1(1kΩ) → GPIO18`, y `GPIO18 → R2(2kΩ) → GND`.
+  3.3V): `Echo → R1(1kΩ) → GPIO34`, y `GPIO34 → R2(2kΩ) → GND`.
 - **Alimentación del servo:** si al mover la válvula el ESP32 se resetea,
   alimentá el servo con una fuente 5V aparte y **uní los GND**.
 

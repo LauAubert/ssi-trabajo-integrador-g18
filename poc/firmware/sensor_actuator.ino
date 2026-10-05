@@ -21,10 +21,15 @@
  *
  * Hardware:
  *   - ESP32 DevKit
- *   - HC-SR04  : TRIG -> GPIO 5,  ECHO -> GPIO 18 (via divisor 5V->3.3V)
- *   - Servo    : signal -> GPIO 13
- *   - LED      : GPIO 2  (el onboard sirve)
- *   - Buzzer   : GPIO 14
+ *   Pines elegidos todos sobre la MISMA hilera libre de la protoboard
+ *   (la que trae VIN y GND), evitando los pines de flash (CMD/SD2/SD3),
+ *   los strapping y EN. Alimentacion por USB: 5V se toma del pin VIN.
+ *
+ *   - HC-SR04  : TRIG -> GPIO 13, ECHO -> GPIO 34 (via divisor 5V->3.3V)
+ *                (GPIO34 es solo-entrada: ideal para el Echo)
+ *   - Servo    : signal -> GPIO 14
+ *   - LED      : GPIO 27 (+ resistencia 220 ohm)
+ *   - Buzzer   : GPIO 26
  *
  * Librerias (Library Manager):
  *   - PubSubClient (Nick O'Leary)
@@ -52,11 +57,11 @@ const char* TOPIC_CMD     = "planta/lineaA/valvula1/cmd";      // broker -> actu
 const char* TOPIC_ESTADO  = "planta/lineaA/valvula1/estado";   // actuador -> broker
 
 // Pines
-const int PIN_TRIG   = 5;
-const int PIN_ECHO   = 18;
-const int PIN_SERVO  = 13;
-const int PIN_LED    = 2;
-const int PIN_BUZZER = 14;
+const int PIN_TRIG   = 13;
+const int PIN_ECHO   = 34;   // solo-entrada (sin pull interno; lo maneja el sensor)
+const int PIN_SERVO  = 14;
+const int PIN_LED    = 27;
+const int PIN_BUZZER = 26;
 
 // Logica de proceso simulado
 const float NIVEL_MIN_CM = 5.0;    // tanque lleno (sensor cerca de la superficie)
