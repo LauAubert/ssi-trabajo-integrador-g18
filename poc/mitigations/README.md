@@ -43,9 +43,31 @@ contraste es la parte que demuestra aprendizaje, no solo el ataque.
    docker compose up -d
    ```
 
-4. **Actualizar los clientes** para usar TLS + credenciales:
-   - ESP32: usar `WiFiClientSecure`, cargar `ca.crt`, `mqtt.connect(id, "esp32", "<pass>")`, puerto 8883.
-   - SCADA: `client.tls_set("ca.crt")`, `client.username_pw_set("scada", "<pass>")`, puerto 8883.
+4. **Actualizar los clientes legítimos** para usar TLS + credenciales.
+   Los dos clientes Python ya aceptan los flags `--tls --ca --user
+   --password` (puerto 8883):
+
+   ```bash
+   # Nodo simulado (atajo recomendado para la fase 2, sin tocar el ESP32)
+   python ../firmware/simulate_esp32.py --host <IP> --port 8883 \
+     --tls --ca ../broker/certs/ca.crt --user esp32 --password <pass_esp32>
+
+   # SCADA / operador
+   python ../dashboard/scada.py --host <IP> --port 8883 \
+     --tls --ca ../broker/certs/ca.crt --user scada --password <pass_scada>
+   ```
+
+   Para que la fase 2 corra sobre el **ESP32 real**, flashear
+   [`../firmware/sensor_actuator_secure.ino`](../firmware/sensor_actuator_secure.ino):
+   pegar el contenido de `../broker/certs/ca.crt` en `CA_CERT`, completar
+   `MQTT_USER`/`MQTT_PASS` y usar el puerto 8883. Ese firmware ya hace la
+   sincronización de hora por **NTP** (TLS valida la vigencia del cert:
+   sin hora correcta, la conexión falla).
+
+   > El certificado del broker lleva la IP en `subjectAltName` (lo hace
+   > `gen-certs.sh`), así que la validación TLS por IP funciona sin trucos.
+   > Si aun así tenés un problema de hostname, los clientes Python aceptan
+   > `--insecure-tls` (sigue cifrando, solo relaja la verificación).
 
 5. **Re-ejecutar el atacante** y mostrar los fallos:
    - `sniff.py --port 1883` → ya no hay puerto plano / no conecta.

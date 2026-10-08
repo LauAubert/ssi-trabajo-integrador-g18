@@ -129,11 +129,25 @@ def main():
     ap.add_argument("--port", type=int, default=1883)
     ap.add_argument("--no-control", action="store_true",
                     help="solo monitorear, no enviar comandos")
+    # Fase de mitigacion: TLS + credenciales (broker endurecido, puerto 8883)
+    ap.add_argument("--tls", action="store_true", help="conectar por TLS")
+    ap.add_argument("--ca", help="ruta al ca.crt para validar el broker")
+    ap.add_argument("--user", help="usuario MQTT")
+    ap.add_argument("--password", help="password MQTT")
+    ap.add_argument("--insecure-tls", action="store_true",
+                    help="no validar el certificado (solo si hay problemas "
+                         "de hostname; sigue cifrando)")
     args = ap.parse_args()
 
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id="scada",
                          userdata={"control": not args.no_control})
     client.on_message = on_message
+    if args.user:
+        client.username_pw_set(args.user, args.password)
+    if args.tls:
+        client.tls_set(ca_certs=args.ca)      # ca_certs=None usa el store del SO
+        if args.insecure_tls:
+            client.tls_insecure_set(True)
     client.connect(args.host, args.port, keepalive=60)
     client.subscribe([(TOPIC_NIVEL, 0), (TOPIC_ESTADO, 0)])
     client.loop_start()

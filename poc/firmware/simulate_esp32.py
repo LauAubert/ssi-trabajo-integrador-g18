@@ -43,11 +43,24 @@ def main():
     ap = argparse.ArgumentParser(description="Simulador ESP32 (lab IoT)")
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--port", type=int, default=1883)
+    # Fase de mitigacion: TLS + credenciales (broker endurecido, puerto 8883)
+    ap.add_argument("--tls", action="store_true", help="conectar por TLS")
+    ap.add_argument("--ca", help="ruta al ca.crt para validar el broker")
+    ap.add_argument("--user", help="usuario MQTT")
+    ap.add_argument("--password", help="password MQTT")
+    ap.add_argument("--insecure-tls", action="store_true",
+                    help="no validar el certificado (sigue cifrando)")
     args = ap.parse_args()
 
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2,
                          client_id="esp32-sim")
     client.on_message = on_message
+    if args.user:
+        client.username_pw_set(args.user, args.password)
+    if args.tls:
+        client.tls_set(ca_certs=args.ca)
+        if args.insecure_tls:
+            client.tls_insecure_set(True)
     client.connect(args.host, args.port, keepalive=60)
     client.subscribe(TOPIC_CMD)
     client.publish(TOPIC_ESTADO, estado["valvula"], retain=True)

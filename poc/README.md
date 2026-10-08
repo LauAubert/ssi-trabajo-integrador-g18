@@ -231,16 +231,25 @@ los mismos ataques, que ahora fallan. Detalle completo en
    docker compose up -d
    ```
 
-4. **Actualizar los clientes** a TLS (puerto **8883**) + credenciales
-   (ESP32 con `WiFiClientSecure` + `ca.crt`; SCADA con `tls_set()` y
-   `username_pw_set()`).
+4. **Actualizar los clientes legítimos** a TLS (puerto **8883**) +
+   credenciales. Lo más simple es el **atajo** con el nodo simulado (no
+   hace falta re-flashear el ESP32):
+
+   ```bash
+   python firmware/simulate_esp32.py --host <IP_PC-A> --port 8883 \
+     --tls --ca broker/certs/ca.crt --user esp32 --password <pass>
+   python dashboard/scada.py --host <IP_PC-A> --port 8883 \
+     --tls --ca broker/certs/ca.crt --user scada --password <pass>
+   ```
+   Para la placa real, flashear `firmware/sensor_actuator_secure.ino`
+   (pegar `ca.crt`, completar usuario/clave; ya sincroniza hora por NTP).
 
 5. **Re-correr el atacante** y mostrar los fallos:
 
    ```bash
    python sniff.py --host <IP_PC-A> --port 1883   # ya no hay puerto plano
-   python sniff.py --host <IP_PC-A> --port 8883   # rechazado: sin credenciales
-   python inject_command.py --host <IP_PC-A> --port 1883   # falla
+   python sniff.py --host <IP_PC-A> --port 8883   # no conecta: espera TLS/credenciales
+   python inject_command.py --host <IP_PC-A> --port 8883  # falla: no completa el handshake
    sudo tshark -i <iface> -Y mqtt                 # solo handshake TLS; payloads cifrados
    ```
 

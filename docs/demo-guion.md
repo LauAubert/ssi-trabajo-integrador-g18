@@ -111,23 +111,41 @@ el SCADA lo haya ordenado**. El atacante controla el mundo físico.
 
 ## 5. Mitigación: los mismos ataques, ahora fallan — 2–3 min
 
-Seguir `poc/mitigations/README.md`:
+Endurecer el broker (detalle en `poc/mitigations/README.md`):
 
 1. `./gen-certs.sh <IP_BROKER>` y crear usuarios (`mosquitto_passwd`).
 2. Cambiar el compose a `mosquitto-secure.conf` + `passwd` + `acl` + `certs`.
 3. `docker compose up -d`.
-4. Reconfigurar SCADA/ESP32 con TLS (8883) + credenciales.
 
-Volver a correr el atacante **sin cambiar nada de su lado**:
+Levantar los **clientes legítimos sobre TLS** (puerto 8883). Hay dos
+caminos — para la demo alcanza con el **atajo** (no hace falta tocar el
+ESP32):
+
+```bash
+# ATAJO (recomendado): nodo simulado + SCADA sobre TLS
+python poc/firmware/simulate_esp32.py --host <IP_BROKER> --port 8883 \
+  --tls --ca poc/broker/certs/ca.crt --user esp32 --password <pass_esp32>
+python poc/dashboard/scada.py --host <IP_BROKER> --port 8883 \
+  --tls --ca poc/broker/certs/ca.crt --user scada --password <pass_scada>
+```
+
+> *Camino alternativo (ESP32 real):* flashear
+> `poc/firmware/sensor_actuator_secure.ino` (pega el `ca.crt`, completa
+> usuario/clave, puerto 8883; ya sincroniza hora por NTP para validar el
+> certificado).
+
+Volver a correr el atacante **sin cambiar nada de su lado** y mostrar que
+ahora falla:
 
 ```bash
 python sniff.py --host <IP_BROKER> --port 1883   # ya no hay puerto plano
-python sniff.py --host <IP_BROKER> --port 8883   # rechazado: sin credenciales
-python inject_command.py --host <IP_BROKER> --port 1883   # falla
+python sniff.py --host <IP_BROKER> --port 8883   # no conecta: espera TLS/credenciales
+python inject_command.py --host <IP_BROKER> --port 8883   # falla: no completa el handshake
 sudo tshark -i <iface> -Y mqtt                   # solo handshake TLS, payloads cifrados
 ```
 
-**Mostrar:** conexiones rechazadas y tráfico ilegible.
+**Mostrar:** el SCADA sigue operando normal sobre TLS, pero el atacante
+—misma red— ya no lee ni inyecta, y en Wireshark el contenido va cifrado.
 
 > *Narrativa:* "Tres cambios —TLS, autenticación y ACL— y el mismo
 > atacante en la misma red se queda afuera. La inseguridad de IoT casi
