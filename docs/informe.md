@@ -174,6 +174,62 @@ El contraste entre ambas fases es el núcleo pedagógico: la inseguridad
 de IoT **no es inevitable**, es configuración por defecto y falta de
 mantenimiento.
 
+### 4.4 Evidencia de la demo en laboratorio
+
+Las siguientes imágenes corresponden a la corrida real de la POC sobre
+equipo y red propios del grupo (demo con dos notebooks: una como
+broker/operador y otra como atacante).
+
+#### Montaje físico
+
+![Banco de la demo](img/hardware/montaje-general.jpg)
+*Figura 1 — Banco de la demo: el nodo ESP32 (derecha) y las notebooks del broker/SCADA y del atacante, en la misma red.*
+
+![Nodo ESP32 en protoboard](img/hardware/nodo-esp32-protoboard.jpg)
+*Figura 2 — Nodo IIoT: ESP32 + sensor ultrasónico HC-SR04 ("nivel"), servo ("válvula") y LED de estado.*
+
+![Tanque simulado con botella](img/hardware/tanque-botella-sensor.jpg)
+*Figura 3 — El "tanque" simulado: una botella frente al sensor; acercando o alejando la superficie se varía el nivel medido.*
+
+#### Arranque del nodo
+
+![Flasheo y Monitor Serie](img/capturas/setup-flasheo-serial-monitor.png)
+*Figura 4 — Arranque del ESP32 en el Monitor Serie: conexión WiFi (IP del hotspot), MQTT OK y publicación de telemetría.*
+
+#### Operación normal
+
+![SCADA operando](img/capturas/normal-scada-operando.png)
+*Figura 5 — SCADA en operación normal: nivel 97 %, válvula cerrada, histórico estable.*
+
+![Telemetría en el broker](img/capturas/normal-telemetria-broker.png)
+*Figura 6 — Telemetría publicada por el nodo, vista desde el broker en texto plano (topic `planta/lineaA/tanque1/nivel`).*
+
+#### Ataque 1 — Sniffing (confidencialidad)
+
+![Sniffing MQTT](img/capturas/ataque-sniff-valvula-abriendo.png)
+*Figura 7 — Con el broker abierto, el atacante suscripto a todo lee la telemetría, los metadatos del broker (`$SYS/#`) y los comandos a la válvula.*
+
+#### Ataque 2 — Inyección de datos falsos (integridad)
+
+![Spoofing del sensor](img/capturas/ataque-spoof-valor-8.png)
+*Figura 8 — `spoof_sensor.py` inyectando lecturas falsas (nivel 8 %) en el topic del sensor desde la máquina atacante.*
+
+![Datos reales vs falsos](img/capturas/ataque-spoof-fake-vs-real.png)
+*Figura 9 — Lecturas reales (nivel 95) y falsas (nivel 8) conviviendo en el mismo topic: el operador recibe datos contradictorios.*
+
+![Impacto en el SCADA](img/capturas/ataque-spoof-scada-oscila.png)
+*Figura 10 — Impacto en el SCADA: el histórico se vuelve una oscilación artificial, imposible en la dinámica real de un tanque.*
+
+#### Ataque 3 — Comando no autorizado (seguridad física)
+
+![Inyección de comando](img/capturas/ataque-inject-cerrar-valvula.png)
+*Figura 11 — `inject_command.py` publica directamente `CERRAR` en el topic de la válvula, sin autenticación: el actuador obedece a un emisor no autorizado.*
+
+> Capturas adicionales (más paneles del SCADA, sniff del cierre de
+> válvula, spoofing fijo en 80 %, etc.) y las fotos en resolución
+> original están en [`img/capturas/`](img/capturas/) e
+> [`img/originales/`](img/originales/).
+
 ---
 
 ## 5. Caso de estudio: botnet Mirai (2016)
