@@ -158,7 +158,7 @@ void conectarMQTT() {
 // ----------------------------------------------------------------
 // Sensor: lectura HC-SR04 -> distancia en cm
 // ----------------------------------------------------------------
-float leerDistanciaCm() {
+float leerDistanciaCruda() {
   digitalWrite(PIN_TRIG, LOW);
   delayMicroseconds(2);
   digitalWrite(PIN_TRIG, HIGH);
@@ -168,6 +168,20 @@ float leerDistanciaCm() {
   long dur = pulseIn(PIN_ECHO, HIGH, 30000UL); // timeout 30ms (~5m)
   if (dur == 0) return NIVEL_MAX_CM;           // sin eco -> asumimos vacio
   return dur * 0.0343 / 2.0;
+}
+
+// Mediana de N lecturas: filtra picos espurios (una lectura mala no
+// mueve el resultado). Clave para que el HC-SR04 no haga saltar el nivel.
+float leerDistanciaCm() {
+  const int N = 5;
+  float m[N];
+  for (int i = 0; i < N; i++) { m[i] = leerDistanciaCruda(); delay(40); }
+  for (int i = 1; i < N; i++) {                // insertion sort (N chico)
+    float k = m[i]; int j = i - 1;
+    while (j >= 0 && m[j] > k) { m[j + 1] = m[j]; j--; }
+    m[j + 1] = k;
+  }
+  return m[N / 2];
 }
 
 // Convierte distancia a porcentaje de llenado (0-100%)
